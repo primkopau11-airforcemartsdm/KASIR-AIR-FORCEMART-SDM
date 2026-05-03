@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Kasir Online RFID</title>
+    <style>
+    :root{
+      --bg:#eef2f7;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --dark:#111827;
+      --gray:#64748b;
+      --shadow:0 4px 14px rgba(0,0,0,.04);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      font-size:16px;
+    }
+
+    header{
+      background:var(--primary-dark);
+      color:white;
+      padding:16px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z-index:20;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+
+    header h1{
+      margin:0;
+      font-size:22px;
+      line-height:1.2;
+    }
+
+    header small{
+      opacity:.9;
+      display:block;
+      margin-top:3px;
+    }
+
+    .login-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:linear-gradient(135deg,#1d4ed8,#0f172a);
+    }
+
+    .login-card{
+      width:100%;
+      max-width:440px;
+      background:white;
+      border-radius:18px;
+      padding:24px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns:235px minmax(0,1fr);
+      min-height:calc(100vh - 68px);
+    }
+
+    aside{
+      background:white;
+      border-right:1px solid var(--line);
+      padding:14px;
+      position:sticky;
+      top:68px;
+      height:calc(100vh - 68px);
+      overflow:auto;
+      z-index:10;
+    }
+
+    main{
+      padding:18px;
+      overflow:auto;
+      min-width:0;
+    }
+
+    .nav{
+      width:100%;
+      border:0;
+      background:white;
+      text-align:left;
+      padding:11px 13px;
+      border-radius:10px;
+      margin-bottom:5px;
+      font-weight:bold;
+      cursor:pointer;
+      color:var(--text);
+      white-space:normal;
+    }
+
+    .nav:hover,.nav.active{
+      background:#dbeafe;
+      color:var(--primary-dark);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+      min-width:0;
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+      min-width:0;
+    }
+
+    .grid2{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .grid3{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+
+    .grid4{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:5px;
+      display:block;
+    }
+
+    input,select,textarea{
+      width:100%;
+      max-width:100%;
+      padding:10px;
+      border:1px solid #d1d5db;
+      border-radius:9px;
+      background:white;
+      font-size:16px;
+      min-height:40px;
+    }
+
+    textarea{
+      min-height:70px;
+      resize:vertical;
+    }
+
+    button{
+      border:0;
+      background:var(--primary);
+      color:white;
+      padding:10px 14px;
+      border-radius:9px;
+      font-weight:bold;
+      cursor:pointer;
+      margin:2px;
+      font-size:14px;
+      min-height:40px;
+      touch-action:manipulation;
+    }
+
+    button.red{background:var(--danger)}
+    button.green{background:var(--success)}
+    button.gray{background:var(--gray)}
+    button.dark{background:var(--dark)}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+      min-width:650px;
+    }
+
+    th,td{
+      border-bottom:1px solid var(--line);
+      padding:9px;
+      text-align:left;
+      font-size:14px;
+      vertical-align:top;
+    }
+
+    th{
+      background:#f8fafc;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .card > table,
+    section > table{
+      display:block;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      border-radius:10px;
+    }
+
+    .hidden{display:none!important}
+
+    .stat{
+      font-size:24px;
+      font-weight:bold;
+      margin-top:6px;
+      word-break:break-word;
+    }
+
+    .muted{color:var(--muted)}
+
+    .toast{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      background:var(--dark);
+      color:white;
+      padding:12px 16px;
+      border-radius:10px;
+      z-index:99;
+      max-width:420px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .top-user{
+      text-align:right;
+      font-size:13px;
+      flex:0 0 auto;
+    }
+
+    .barcode-box svg{
+      max-width:180px;
+      height:52px;
+    }
+
+    .debug{
+      white-space:pre-wrap;
+      font-size:12px;
+      background:#0f172a;
+      color:#e5e7eb;
+      padding:12px;
+      border-radius:10px;
+      overflow:auto;
+      max-width:100%;
+    }
+
+    .receipt-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.65);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:24px;
+      z-index:100;
+      overflow:auto;
+    }
+
+    .receipt-panel{
+      background:white;
+      border-radius:14px;
+      padding:16px;
+      max-width:390px;
+      width:100%;
+      max-height:92vh;
+      overflow:auto;
+    }
+
+    .receipt{
+      font-family:monospace;
+      font-size:12px;
+      color:#000;
+      background:white;
+      padding:8px;
+    }
+
+    .receipt .center{text-align:center}
+
+    @media (max-width:1100px){
+      .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
+    @media (max-width:850px){
+      header{
+        align-items:flex-start;
+        padding:14px;
+      }
+
+      header h1{
+        font-size:20px;
+      }
+
+      .top-user{
+        font-size:12px;
+      }
+
+      .app{
+        display:block;
+        min-height:auto;
+      }
+
+      aside{
+        position:sticky;
+        top:63px;
+        height:auto;
+        max-height:none;
+        overflow-x:auto;
+        overflow-y:hidden;
+        white-space:nowrap;
+        border-right:0;
+        border-bottom:1px solid var(--line);
+        padding:8px;
+        display:flex;
+        gap:6px;
+        background:white;
+      }
+
+      .nav{
+        width:auto;
+        min-width:max-content;
+        margin:0;
+        padding:10px 12px;
+        text-align:center;
+        white-space:nowrap;
+        flex:0 0 auto;
+      }
+
+      main{
+        padding:12px;
+      }
+
+      .grid2,.grid3,.grid4{
+        grid-template-columns:1fr;
+      }
+
+      .card{
+        padding:14px;
+        border-radius:12px;
+      }
+
+      button{
+        padding:10px 12px;
+      }
+
+      table{
+        min-width:720px;
+      }
+
+      .toast{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        max-width:none;
+      }
+    }
+
+    @media (max-width:520px){
+      body{
+        font-size:15px;
+      }
+
+      header{
+        display:block;
+      }
+
+      header h1{
+        font-size:18px;
+      }
+
+      .top-user{
+        text-align:left;
+        margin-top:8px;
+      }
+
+      .top-user button{
+        width:100%;
+        margin-top:8px;
+      }
+
+      aside{
+        top:91px;
+      }
+
+      main{
+        padding:10px;
+      }
+
+      .login-card{
+        padding:18px;
+        border-radius:14px;
+      }
+
+      .card{
+        padding:12px;
+        margin-bottom:12px;
+      }
+
+      .stat{
+        font-size:21px;
+      }
+
+      button{
+        width:100%;
+        margin:4px 0;
+      }
+
+      .grid button{
+        width:100%;
+      }
+
+      input,select,textarea{
+        font-size:16px;
+      }
+
+      .receipt-modal{
+        padding:10px;
+      }
+
+      .receipt-panel{
+        max-width:100%;
+        border-radius:12px;
+      }
+
+      .barcode-box svg{
+        max-width:150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loginScreen" class="login-wrap">
+    <div class="login-card">
+      <h1>Login Kasir RFID</h1>
+      <label>Scan RFID Login lalu Enter</label>
+      <input id="login_rfid" placeholder="Tempel RFID di sini" autocomplete="off" autofocus oninput="autoRfidLoginInput()" onkeydown="if(event.key==='Enter') doRfidLogin()">
+      <br><br><hr><br>
+      <label>Username</label><input id="login_username" placeholder="Masukkan username"><br><br>
+      <label>Password</label><input id="login_password" type="password" placeholder="Masukkan password" onkeydown="if(event.key==='Enter') doLogin()"><br><br>
+      <button onclick="doLogin()">Login Username</button>
+    </div>
+  </div>
+
+  <div id="appScreen" class="hidden">
+    <header><div><h1 id="appTitle">Kasir Online RFID</h1><small id="appSub">Database Google Spreadsheet</small></div><div class="top-user"><div id="userInfo"></div><button class="dark" onclick="doLogout()">Logout</button></div></header>
+    <div class="app">
+      <aside id="menu"></aside>
+      <main>
+        <section id="dashboard"></section><section id="transaksi" class="hidden"></section><section id="barang" class="hidden"></section><section id="barcode" class="hidden"></section><section id="anggota" class="hidden"></section><section id="stok" class="hidden"></section><section id="pembelian" class="hidden"></section><section id="dataBeli" class="hidden"></section><section id="dataJual" class="hidden"></section><section id="laporan" class="hidden"></section><section id="users" class="hidden"></section><section id="settings" class="hidden"></section><section id="debug" class="hidden"></section>
+      </main>
+    </div>
+  </div>
+
+  <div id="receiptModal" class="receipt-modal hidden"><div class="receipt-panel"><div id="receiptContent"></div><div style="margin-top:12px"><button onclick="printReceipt()">Print Struk</button><button class="gray" onclick="closeReceipt()">Tutup</button></div></div></div>
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+let session=null,lastReceiptHtml='';
+let data={barang:[],anggota:[],users:[],pembelian:[],detailBeli:[],penjualan:[],detailJual:[],stok:[],settings:{},debug:{},cartJual:[],cartBeli:[],page:'dashboard'};
+const adminPages=[['dashboard','Dashboard'],['transaksi','Transaksi Pembelian'],['barang','Data Barang'],['barcode','Barcode'],['anggota','Data Anggota + RFID'],['stok','Input Stok'],['pembelian','Pembelian Stok'],['dataBeli','Data Beli'],['dataJual','Data Jual'],['laporan','Laporan'],['users','User Login + RFID'],['settings','Pengaturan Struk'],['debug','Debug']];
+const userPages=[['transaksi','Transaksi Pembelian'],['laporan','Laporan Semua Transaksi']];
+
+const EAN_LEFT_ODD = {
+  '0':'0001101','1':'0011001','2':'0010011','3':'0111101','4':'0100011',
+  '5':'0110001','6':'0101111','7':'0111011','8':'0110111','9':'0001011'
+};
+const EAN_LEFT_EVEN = {
+  '0':'0100111','1':'0110011','2':'0011011','3':'0100001','4':'0011101',
+  '5':'0111001','6':'0000101','7':'0010001','8':'0001001','9':'0010111'
+};
+const EAN_RIGHT = {
+  '0':'1110010','1':'1100110','2':'1101100','3':'1000010','4':'1011100',
+  '5':'1001110','6':'1010000','7':'1000100','8':'1001000','9':'1110100'
+};
+const EAN_PARITY = {
+  '0':'OOOOOO','1':'OOEOEE','2':'OOEEOE','3':'OOEEEO','4':'OEOOEE',
+  '5':'OEEOOE','6':'OEEEOO','7':'OEOEOE','8':'OEOEEO','9':'OEEOEO'
+};
+
+function ean13CheckDigit(first12){
+  const d = String(first12).replace(/\D/g,'').padStart(12,'0').slice(-12);
+  let sum = 0;
+  for(let i=0;i<12;i++){
+    const n = Number(d[i]);
+    sum += (i % 2 === 0) ? n : n * 3;
+  }
+  return String((10 - (sum % 10)) % 10);
+}
+
+function normalizeEan13(text){
+  let d = String(text || '').replace(/\D/g,'');
+  if(d.length >= 13){
+    d = d.slice(-13);
+    d = d.slice(0,12) + ean13CheckDigit(d.slice(0,12));
+    return d;
+  }
+  d = d.padStart(12,'0');
+  return d + ean13CheckDigit(d);
+}
+
+function makeNewEan13(){
+  const base = String(Date.now()).replace(/\D/g,'').slice(-11).padStart(11,'0');
+  const first12 = '8' + base;
+  return first12 + ean13CheckDigit(first12);
+}
+
+function barcodeSvg(text,height=60){
+  const ean = normalizeEan13(text);
+  const first = ean[0];
+  const parity = EAN_PARITY[first];
+  const leftDigits = ean.slice(1,7);
+  const rightDigits = ean.slice(7);
+
+  let leftBits = '';
+  for(let i=0;i<6;i++){
+    leftBits += parity[i] === 'O' ? EAN_LEFT_ODD[leftDigits[i]] : EAN_LEFT_EVEN[leftDigits[i]];
+  }
+
+  let rightBits = '';
+  for(let i=0;i<6;i++){
+    rightBits += EAN_RIGHT[rightDigits[i]];
+  }
+
+  const bits = '101' + leftBits + '01010' + rightBits + '101';
+  const moduleW = 2;
+  const quiet = 12;
+  const barH = height;
+  const textH = 18;
+  const width = bits.length * moduleW + quiet * 2;
+
+  let bars = '';
+  for(let i=0;i<bits.length;i++){
+    if(bits[i] === '1'){
+      let h = barH;
+      if(i < 3 || (i >= 45 && i < 50) || i >= bits.length - 3) h = barH + 6;
+      bars += `<rect x="${quiet + i * moduleW}" y="0" width="${moduleW}" height="${h}" fill="#000"/>`;
+    }
+  }
+
+  return `<svg viewBox="0 0 ${width} ${barH + textH + 8}" width="210" height="${barH + textH + 8}" xmlns="http://www.w3.org/2000/svg">
+    ${bars}
+    <text x="${quiet-2}" y="${barH + 14}" text-anchor="start" font-size="13" font-family="Arial">${ean[0]}</text>
+    <text x="${quiet + 3*moduleW + 21*moduleW}" y="${barH + 14}" text-anchor="middle" font-size="13" font-family="Arial">${ean.slice(1,7)}</text>
+    <text x="${quiet + 50*moduleW + 21*moduleW}" y="${barH + 14}" text-anchor="middle" font-size="13" font-family="Arial">${ean.slice(7)}</text>
+  </svg>`;
+}
+
+function qs(id){return document.getElementById(id)}function val(id){return qs(id).value}function isAdmin(){return session&&session.role==='ADMIN'}function pages(){return isAdmin()?adminPages:userPages}
+function rp(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0))}
+function e(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]))}function js(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function info(msg){qs('toast').textContent=msg;qs('toast').classList.remove('hidden');setTimeout(()=>qs('toast').classList.add('hidden'),3000)}
+function callServer(fn,p,onSuccess){google.script.run.withSuccessHandler(onSuccess).withFailureHandler(err=>info(err.message||String(err)))[fn](p)}function payload(obj){return Object.assign({token:session.token},obj||{})}
+let loginRfidTimer=null;
+let loginRfidBusy=false;
+function doLogin(){callServer('login',{username:val('login_username'),password:val('login_password')},res=>startSession(res))}
+function autoRfidLoginInput(){
+  clearTimeout(loginRfidTimer);
+  loginRfidTimer=setTimeout(()=>{
+    const r=val('login_rfid').trim();
+    if(r.length>=5 && !loginRfidBusy) doRfidLogin();
+  },350);
+}
+function doRfidLogin(){
+  const r=val('login_rfid').trim();
+  if(!r){info('RFID kosong.');return}
+  if(loginRfidBusy)return;
+  loginRfidBusy=true;
+  callServer('loginByRfid',{rfid_uid:r},res=>startSession(res));
+  setTimeout(()=>{loginRfidBusy=false},1500);
+}
+function startSession(res){session=res.session;if(qs('login_rfid'))qs('login_rfid').value='';qs('loginScreen').classList.add('hidden');qs('appScreen').classList.remove('hidden');loadData()}function doLogout(){if(session)callServer('logout',{token:session.token},()=>{});session=null;qs('appScreen').classList.add('hidden');qs('loginScreen').classList.remove('hidden')}
+function loadData(){info('Mengambil data...');callServer('getData',payload(),res=>{Object.assign(data,res);session=res.session;qs('appTitle').textContent=data.settings.nama_toko||'Kasir Online RFID';qs('appSub').textContent=data.settings.alamat||'Database Google Spreadsheet';qs('userInfo').innerHTML=`<b>${e(session.nama)}</b><br>${e(session.role)} ${session.rfid_uid?'<br>RFID: '+e(session.rfid_uid):''}`;render();info('Data dimuat. Barang: '+data.barang.length)})}
+function openPage(id){data.page=id;pages().forEach(p=>qs(p[0]).classList.add('hidden'));qs(id).classList.remove('hidden');renderMenu()}function renderMenu(){qs('menu').innerHTML=pages().map(p=>`<button class="nav ${data.page===p[0]?'active':''}" onclick="openPage('${p[0]}')">${p[1]}</button>`).join('')}
+function table(head,rows){if(!rows.length)return'<p class="muted">Belum ada data.</p>';return`<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function getBarang(kode){return data.barang.find(b=>String(b.kode)===String(kode))}function getAnggota(nrp){return data.anggota.find(a=>String(a.nrp)===String(nrp))}function getAnggotaByRfid(rfid){return data.anggota.find(a=>String(a.rfid_uid||'').replace(/^0+/,'')===String(rfid||'').replace(/^0+/,''))}
+function optBarang(){if(!data.barang.length)return'<option value="">Belum ada barang</option>';return'<option value="">Pilih barang</option>'+data.barang.map(b=>`<option value="${e(b.kode)}">${e(b.kode)} - ${e(b.nama)} | Stok: ${e(b.stok)}</option>`).join('')}function optAnggota(){return'<option value="">Umum</option>'+data.anggota.map(a=>`<option value="${e(a.nrp)}">${e(a.nama)} - ${e(a.nrp)} - RFID: ${e(a.rfid_uid||'-')}</option>`).join('')}
+
+function supplierOptions(selected){
+  const set = {};
+  data.barang.forEach(b=>{
+    const s = String(b.supplier || '').trim();
+    if(s) set[s] = true;
+  });
+  const list = Object.keys(set).sort();
+  let html = '<option value="">Pilih Supplier</option>';
+  list.forEach(s=>{
+    html += `<option value="${e(s)}" ${selected===s?'selected':''}>${e(s)} - masukkan barang supplier ${e(s)}</option>`;
+  });
+  html += `<option value="LAINNYA" ${selected==='LAINNYA'?'selected':''}>Supplier Lainnya</option>`;
+  return html;
+}
+
+
+
+function render(){renderMenu();renderDashboard();renderTransaksi();renderLaporan();if(isAdmin()){renderBarang();renderBarcode();renderAnggota();renderStok();renderPembelian();renderDataBeli();renderDataJual();renderUsers();renderSettings();renderDebug()}if(!pages().some(p=>p[0]===data.page))data.page='transaksi';openPage(data.page)}
+function renderDashboard(){if(!isAdmin()){qs('dashboard').innerHTML='';return}const omzet=data.penjualan.reduce((s,x)=>s+Number(x.total||0),0),pembelian=data.pembelian.reduce((s,x)=>s+Number(x.total||0),0),hpp=data.detailJual.reduce((s,x)=>s+(Number(x.qty||0)*Number(x.harga_beli||0)),0),rendah=data.barang.filter(b=>Number(b.stok||0)<=Number(b.min_stok||0));qs('dashboard').innerHTML=`<button class="gray" onclick="loadData()">Refresh Data</button><br><br><div class="grid grid3"><div class="card"><div class="muted">Barang</div><div class="stat">${data.barang.length}</div></div><div class="card"><div class="muted">Omzet</div><div class="stat">${rp(omzet)}</div></div><div class="card"><div class="muted">Laba Kotor</div><div class="stat">${rp(omzet-hpp)}</div></div><div class="card"><div class="muted">Pembelian Stok</div><div class="stat">${rp(pembelian)}</div></div><div class="card"><div class="muted">Transaksi</div><div class="stat">${data.penjualan.length}</div></div><div class="card"><div class="muted">Stok Rendah</div><div class="stat">${rendah.length}</div></div></div><div class="card"><h2>Stok Rendah</h2>${table(['Kode','Nama','Stok','Min'],rendah.map(b=>[e(b.kode),e(b.nama),e(b.stok),e(b.min_stok)]))}</div>`}
+
+function renderTransaksi(){const total=data.cartJual.reduce((s,x)=>s+Number(x.subtotal||0),0);qs('transaksi').innerHTML=`<div class="grid grid2"><div class="card"><h2>Transaksi Pembelian</h2><label>Scan Kartu RFID Anggota lalu Enter</label><input id="rfid_scan" placeholder="Tempel kartu RFID di sini" autocomplete="off" oninput="autoTransaksiRfidInput()" onkeydown="if(event.key==='Enter'){selectAnggotaByRfidInput();}"><br><br><label>Scan Barcode EAN-13 / Ketik Kode Barang lalu Enter</label><input id="scan_kode" placeholder="Scan barcode barang di sini" onkeydown="if(event.key==='Enter'){addCartByScan();}"><br><br><div class="grid grid4"><div><label>Barang</label><select id="jual_barang">${optBarang()}</select></div><div><label>Qty</label><input id="jual_qty" type="number" value="1"></div><div><label>Harga</label><input id="jual_harga" type="number" placeholder="Default"></div><div style="align-self:end"><button onclick="addCartJual()">Tambah</button></div></div><h3>Keranjang</h3>${table(['Kode','Nama','Qty','Harga','Subtotal','Aksi'],data.cartJual.map((x,i)=>[e(x.kode),e(x.nama),e(x.qty),rp(x.harga_jual),rp(x.subtotal),`<button class="red" onclick="removeCartJual(${i})">Hapus</button>`]))}</div><div class="card"><h2>Total: ${rp(total)}</h2><label>Anggota</label><select id="jual_anggota" onchange="onAnggotaChange()">${optAnggota()}</select><br><br><label>RFID Anggota</label><input id="jual_rfid" readonly><br><br><label>Pelanggan Manual</label><input id="jual_nama" value="Umum"><br><br><label>Metode Pembayaran</label><select id="jual_metode" onchange="onMetodeChange()"><option value="TUNAI">Tunai</option><option value="QRIS">QRIS</option><option value="KREDIT">Kredit</option></select><br><br><label>Bayar</label><input id="jual_bayar" type="number" value="${total}" oninput="updateKembalian()"><br><br><label>Kembalian</label><input id="jual_kembali" type="text" value="${rp(0)}" readonly><br><br><label>Catatan</label><textarea id="jual_catatan"></textarea><br><br><button class="green" onclick="submitJual()">Simpan + Tampilkan Struk</button><button class="gray" onclick="loadData()">Refresh Data</button></div></div>`;setTimeout(()=>{updateKembalian();onAnggotaChange()},50)}
+let transaksiRfidTimer=null;
+let transaksiSubmitBusy=false;
+function autoTransaksiRfidInput(){
+  clearTimeout(transaksiRfidTimer);
+  transaksiRfidTimer=setTimeout(()=>{
+    const rfid=val('rfid_scan').trim();
+    if(rfid.length>=5) selectAnggotaByRfidInput();
+  },350);
+}
+function selectAnggotaByRfidInput(){
+  const rfid=val('rfid_scan').trim();
+  if(!rfid)return;
+  const a=getAnggotaByRfid(rfid);
+  if(!a){info('RFID tidak terdaftar di anggota.');return}
+  qs('jual_anggota').value=a.nrp;
+  qs('jual_nama').value=a.nama;
+  qs('jual_rfid').value=a.rfid_uid||'';
+  qs('rfid_scan').value='';
+  info('Anggota dipilih: '+a.nama);
+
+  if(data.cartJual.length>0){
+    updateKembalian();
+    if(!transaksiSubmitBusy){
+      transaksiSubmitBusy=true;
+      info('RFID terbaca. Transaksi disimpan dan struk disiapkan...');
+      setTimeout(()=>submitJual(),250);
+    }
+  }
+}
+function onAnggotaChange(){const nrp=val('jual_anggota'),a=nrp?getAnggota(nrp):null;if(a){qs('jual_nama').value=a.nama;qs('jual_rfid').value=a.rfid_uid||''}else if(qs('jual_rfid'))qs('jual_rfid').value=''}function onMetodeChange(){const total=data.cartJual.reduce((s,x)=>s+Number(x.subtotal||0),0),m=val('jual_metode');if(m==='QRIS')qs('jual_bayar').value=total;if(m==='KREDIT')qs('jual_bayar').value=0;updateKembalian()}function updateKembalian(){const total=data.cartJual.reduce((s,x)=>s+Number(x.subtotal||0),0),bayar=Number(qs('jual_bayar')?qs('jual_bayar').value:0),metode=qs('jual_metode')?val('jual_metode'):'TUNAI',kembali=metode==='KREDIT'?0:Math.max(0,bayar-total);if(qs('jual_kembali'))qs('jual_kembali').value=rp(kembali)}
+function addCartByScan(){const kode=val('scan_kode').trim();if(!kode)return;addItemToJual(kode,1,'');qs('scan_kode').value='';setTimeout(()=>qs('scan_kode').focus(),50)}function addCartJual(){addItemToJual(val('jual_barang'),Number(val('jual_qty')||0),val('jual_harga'))}function addItemToJual(kode,qty,hargaInput){const b=getBarang(kode);if(!b){info('Barang/barcode tidak ditemukan.');return}if(qty<=0){info('Qty salah.');return}const harga=hargaInput===''?Number(b.harga_jual||0):Number(hargaInput||0),old=data.cartJual.find(x=>String(x.kode)===String(kode)&&Number(x.harga_jual)===Number(harga));if(old){old.qty=Number(old.qty)+qty;old.subtotal=Number(old.qty)*Number(old.harga_jual)}else data.cartJual.push({kode:b.kode,nama:b.nama,qty:qty,harga_beli:Number(b.harga_beli||0),harga_jual:harga,subtotal:qty*harga});renderTransaksi()}function removeCartJual(i){data.cartJual.splice(i,1);renderTransaksi()}function submitJual(){if(!data.cartJual.length){info('Keranjang kosong.');return}const nrp=val('jual_anggota'),agt=nrp?getAnggota(nrp):null;callServer('prosesPenjualan',payload({data:{anggota_nrp:agt?agt.nrp:'',anggota_nama:agt?agt.nama:'',anggota_rfid:agt?agt.rfid_uid:'',pelanggan:agt?agt.nama:val('jual_nama'),metode_bayar:val('jual_metode'),bayar:val('jual_bayar'),catatan:val('jual_catatan'),items:data.cartJual}}),res=>{transaksiSubmitBusy=false;Object.assign(data,res.data);data.cartJual=[];render();showReceipt(res.receipt)})}
+
+/* ADMIN PAGES */
+function renderBarang(){qs('barang').innerHTML=`<div class="card"><h2>Data Barang</h2><div class="grid grid4"><div><label>Kode Barcode EAN-13</label><input id="b_kode" inputmode="numeric" maxlength="13"></div><div><label>Nama</label><input id="b_nama"></div><div><label>Kategori</label><input id="b_kategori"></div><div><label>Supplier Barang</label><input id="b_supplier" placeholder="Contoh: Supplier A"></div><div><label>Satuan</label><input id="b_satuan" value="pcs"></div><div><label>Harga Beli</label><input id="b_hb" type="number" value="0"></div><div><label>Harga Jual</label><input id="b_hj" type="number" value="0"></div><div><label>Stok</label><input id="b_stok" type="number" value="0"></div><div><label>Minimal Stok</label><input id="b_min" type="number" value="0"></div></div><br><button onclick="saveBarang()">Simpan / Update Barang</button><button class="gray" onclick="clearBarangForm()">Kosongkan</button></div><div class="card"><h2>List Barang</h2>${table(['Kode','Nama','Supplier','Harga Beli','Harga Jual','Stok','Barcode','Aksi'],data.barang.map(b=>[e(b.kode),e(b.nama),e(b.supplier||'-'),rp(b.harga_beli),rp(b.harga_jual),e(b.stok),`<div class="barcode-box">${barcodeSvg(b.kode,36)}</div>`,`<button onclick="editBarang('${js(b.kode)}')">Edit</button><button class="red" onclick="deleteBarang('${js(b.kode)}')">Hapus</button>`]))}</div>`}
+function clearBarangForm(){['b_kode','b_nama','b_kategori','b_supplier','b_hb','b_hj','b_stok','b_min'].forEach(id=>qs(id).value='');qs('b_satuan').value='pcs'}function editBarang(kode){const b=getBarang(kode);if(!b)return;qs('b_kode').value=b.kode;qs('b_nama').value=b.nama;qs('b_kategori').value=b.kategori;qs('b_supplier').value=b.supplier||'';qs('b_satuan').value=b.satuan||'pcs';qs('b_hb').value=b.harga_beli;qs('b_hj').value=b.harga_jual;qs('b_stok').value=b.stok;qs('b_min').value=b.min_stok;window.scrollTo(0,0)}function saveBarang(){callServer('simpanBarang',payload({data:{kode:val('b_kode'),nama:val('b_nama'),kategori:val('b_kategori'),supplier:val('b_supplier'),satuan:val('b_satuan'),harga_beli:val('b_hb'),harga_jual:val('b_hj'),stok:val('b_stok'),min_stok:val('b_min')}}),res=>{Object.assign(data,res);render();info('Barang tersimpan.')})}function deleteBarang(kode){if(confirm('Hapus barang ini?'))callServer('hapusBarang',payload({kode:kode}),res=>{Object.assign(data,res);render()})}
+function renderBarcode(){qs('barcode').innerHTML=`<div class="card"><h2>Cetak Barcode Barang</h2><button onclick="printBarcode()">Print Barcode</button><div id="barcodePrint" class="grid grid3" style="margin-top:12px">${data.barang.map(b=>`<div class="card center"><b>${e(b.nama)}</b><br><div class="barcode-box">${barcodeSvg(b.kode,48)}</div><small>${e(b.kode)}</small></div>`).join('')}</div></div>`}function printBarcode(){openPrintWindow(qs('barcodePrint').innerHTML,'Barcode Barang')}
+function renderAnggota(){qs('anggota').innerHTML=`<div class="card"><h2>Data Anggota + RFID</h2><p class="muted">Klik kolom RFID lalu tempel kartu RFID. Reader harus mode keyboard.</p><div class="grid grid4"><div><label>Nama</label><input id="a_nama"></div><div><label>NRP</label><input id="a_nrp"></div><div><label>Pangkat</label><input id="a_pangkat"></div><div><label>Satker</label><input id="a_satker"></div><div><label>RFID UID</label><input id="a_rfid" placeholder="Tempel kartu RFID di sini"></div></div><br><button onclick="saveAnggota()">Simpan / Update Anggota</button><button class="gray" onclick="clearAnggotaForm()">Kosongkan</button></div><div class="card">${table(['Nama','NRP','Pangkat','Satker','RFID UID','Aksi'],data.anggota.map(a=>[e(a.nama),e(a.nrp),e(a.pangkat),e(a.satker),e(a.rfid_uid||'-'),`<button onclick="editAnggota('${js(a.nrp)}')">Edit</button><button class="red" onclick="deleteAnggota('${js(a.nrp)}')">Hapus</button>`]))}</div>`}
+function clearAnggotaForm(){['a_nama','a_nrp','a_pangkat','a_satker','a_rfid'].forEach(id=>qs(id).value='')}function editAnggota(nrp){const a=getAnggota(nrp);if(!a)return;qs('a_nama').value=a.nama;qs('a_nrp').value=a.nrp;qs('a_pangkat').value=a.pangkat;qs('a_satker').value=a.satker;qs('a_rfid').value=a.rfid_uid||'';window.scrollTo(0,0)}function saveAnggota(){callServer('simpanAnggota',payload({data:{nama:val('a_nama'),nrp:val('a_nrp'),pangkat:val('a_pangkat'),satker:val('a_satker'),rfid_uid:val('a_rfid')}}),res=>{Object.assign(data,res);render();info('Anggota tersimpan.')})}function deleteAnggota(nrp){if(confirm('Hapus anggota?'))callServer('hapusAnggota',payload({nrp:nrp}),res=>{Object.assign(data,res);render()})}
+function renderStok(){qs('stok').innerHTML=`<div class="card"><h2>Input Stok</h2><div class="grid grid4"><div><label>Barang</label><select id="s_kode">${optBarang()}</select></div><div><label>Tipe</label><select id="s_tipe"><option>Masuk</option><option>Keluar</option><option>Penyesuaian Plus</option><option>Penyesuaian Minus</option></select></div><div><label>Qty</label><input id="s_qty" type="number" value="1"></div><div><label>Keterangan</label><input id="s_ket"></div></div><br><button onclick="saveStok()">Simpan Stok</button></div><div class="card"><h2>Riwayat Stok</h2>${table(['Tanggal','Kode','Nama','Tipe','Qty','Ket'],data.stok.slice().reverse().map(x=>[e(x.tanggal),e(x.kode),e(x.nama),e(x.tipe),e(x.qty),e(x.keterangan)]))}</div>`}
+function saveStok(){callServer('inputStok',payload({data:{kode:val('s_kode'),tipe:val('s_tipe'),qty:val('s_qty'),keterangan:val('s_ket')}}),res=>{Object.assign(data,res);render()})}
+
+/* PEMBELIAN STOK + BARANG BARU + BARCODE + SUPPLIER + PPN + DISKON */
+function hitungTotalPembelian(){
+  const subtotal = data.cartBeli.reduce((s,x)=>s+Number(x.subtotal||0),0);
+  const diskonTotal = qs('pb_diskon_total') ? Math.min(subtotal, Number(val('pb_diskon_total')||0)) : 0;
+  const ppnPersen = qs('pb_ppn') ? Number(val('pb_ppn')||0) : 0;
+  const dasarPpn = Math.max(0, subtotal - diskonTotal);
+  const ppnTotal = Math.round(dasarPpn * ppnPersen / 100);
+  const totalAkhir = dasarPpn + ppnTotal;
+  return {subtotal,diskonTotal,ppnPersen,dasarPpn,ppnTotal,totalAkhir};
+}
+
+function updatePembelianTotals(){
+  const t = hitungTotalPembelian();
+  if(qs('pb_subtotal_view')) qs('pb_subtotal_view').textContent = rp(t.subtotal);
+  if(qs('pb_diskon_view')) qs('pb_diskon_view').textContent = rp(t.diskonTotal);
+  if(qs('pb_ppn_view')) qs('pb_ppn_view').textContent = rp(t.ppnTotal);
+  if(qs('pb_total_view')) qs('pb_total_view').textContent = rp(t.totalAkhir);
+}
+
+function getSupplierPembelian(){
+  const pilih = qs('pb_supplier_select') ? val('pb_supplier_select') : '-';
+  return pilih === 'LAINNYA' ? 'Supplier Lainnya' : (pilih || '-');
+}
+
+function updateSupplierButtonLabel(){
+  const s = getSupplierPembelian();
+  if(qs('btn_supplier_barang')){
+    qs('btn_supplier_barang').textContent = s && s !== '-' && s !== 'Supplier Lainnya'
+      ? 'Masukkan Barang ' + s
+      : 'Masukkan Barang Supplier';
+  }
+}
+
+function renderPembelian(){
+  const total = data.cartBeli.reduce((s,x)=>s+Number(x.subtotal||0),0);
+  qs('pembelian').innerHTML=`
+    <div class="card">
+      <h2>Tambah Barang Baru Saat Pembelian</h2>
+      <p class="muted">Isi kode/barcode manual atau scan barcode barang baru. Setelah itu bisa langsung masuk keranjang pembelian stok.</p>
+      <div class="grid grid4">
+        <div><label>Kode Barcode EAN-13 Baru</label><input id="nb_kode" inputmode="numeric" placeholder="Scan / ketik EAN-13 angka" maxlength="13" oninput="previewNewBarcode()"></div>
+        <div><label>Nama Barang Baru</label><input id="nb_nama"></div>
+        <div><label>Kategori</label><input id="nb_kategori"></div>
+        <div><label>Supplier Barang</label><input id="nb_supplier" placeholder="Contoh: Supplier A"></div>
+        <div><label>Satuan</label><input id="nb_satuan" value="pcs"></div>
+        <div><label>Harga Beli</label><input id="nb_hb" type="number" value="0"></div>
+        <div><label>Harga Jual</label><input id="nb_hj" type="number" value="0"></div>
+        <div><label>Qty Pembelian</label><input id="nb_qty" type="number" value="1"></div>
+        <div><label>Minimal Stok</label><input id="nb_min" type="number" value="0"></div>
+      </div>
+      <br>
+      <button onclick="generateNewBarcode()">Generate Barcode</button>
+      <button onclick="saveNewBarang(false)">Simpan Barang Baru</button>
+      <button class="green" onclick="saveNewBarang(true)">Simpan + Masuk Keranjang</button>
+      <div id="nb_preview" class="barcode-box" style="margin-top:10px"></div>
+    </div>
+
+    <div class="grid grid2">
+      <div class="card">
+        <h2>Pembelian Stok</h2>
+
+        <div class="grid grid4">
+          <div><label>Barang</label><select id="pb_barang">${optBarang()}</select></div>
+          <div><label>Qty</label><input id="pb_qty" type="number" value="1"></div>
+          <div><label>Harga Beli</label><input id="pb_harga" type="number" placeholder="Default"></div>
+          <div style="align-self:end"><button onclick="addBeli()">Tambah</button></div>
+          <div><label>Diskon Item %</label><input id="pb_diskon_persen" type="number" value="0"></div>
+          <div><label>Diskon Item Rp</label><input id="pb_diskon_nominal" type="number" value="0"></div>
+          <div><label>Qty Semua Barang</label><input id="pb_qty_semua" type="number" value="1"></div>
+          <div style="align-self:end"><button id="btn_supplier_barang" class="gray" onclick="addSupplierBarangToBeli()">Masukkan Barang Supplier</button></div>
+        </div>
+
+        <h3>Keranjang</h3>
+        ${table(['Kode','Nama','Qty','Harga','Diskon %','Diskon Rp','Subtotal','Aksi'],data.cartBeli.map((x,i)=>[
+          e(x.kode),e(x.nama),e(x.qty),rp(x.harga_beli),e(x.diskon_persen||0),rp(x.diskon_nominal||0),rp(x.subtotal),
+          `<button class="red" onclick="data.cartBeli.splice(${i},1);renderPembelian()">Hapus</button>`
+        ]))}
+      </div>
+
+      <div class="card">
+        <h2>Total: <span id="pb_total_view">${rp(total)}</span></h2>
+
+        <label>Pilih Supplier</label>
+        <select id="pb_supplier_select" onchange="updateSupplierButtonLabel()">
+          ${supplierOptions()}
+        </select>
+        <br><br>
+
+        
+
+        <div class="grid grid2">
+          <div>
+            <label>Diskon Keseluruhan Rp</label>
+            <input id="pb_diskon_total" type="number" value="0" oninput="updatePembelianTotals()">
+          </div>
+          <div>
+            <label>PPN Keseluruhan %</label>
+            <input id="pb_ppn" type="number" value="0" oninput="updatePembelianTotals()">
+          </div>
+        </div>
+        <br>
+
+        <table style="min-width:0">
+          <tr><td>Subtotal Barang</td><td style="text-align:right"><b id="pb_subtotal_view">${rp(total)}</b></td></tr>
+          <tr><td>Diskon Keseluruhan</td><td style="text-align:right"><b id="pb_diskon_view">${rp(0)}</b></td></tr>
+          <tr><td>PPN</td><td style="text-align:right"><b id="pb_ppn_view">${rp(0)}</b></td></tr>
+          <tr><td>Total Akhir</td><td style="text-align:right"><b id="pb_total_view">${rp(total)}</b></td></tr>
+        </table>
+        <br>
+
+        <label>Catatan</label>
+        <textarea id="pb_catatan"></textarea>
+        <br><br>
+
+        <button class="green" onclick="submitBeli()">Simpan Pembelian Stok</button>
+      </div>
+    </div>`;
+  setTimeout(()=>{updatePembelianTotals();updateSupplierButtonLabel();},50);
+}
+
+function generateNewBarcode(){qs('nb_kode').value=makeNewEan13();previewNewBarcode();info('Barcode EAN-13 dibuat: '+qs('nb_kode').value)}
+
+function previewNewBarcode(){
+  if(qs('nb_preview')) qs('nb_preview').innerHTML=barcodeSvg(val('nb_kode'),48);
+}
+
+function saveNewBarang(addToCart){
+  const kode=val('nb_kode').trim();
+  if(!kode){info('Kode barcode EAN-13 baru wajib diisi.');return}
+  if(!val('nb_nama').trim()){info('Nama barang baru wajib diisi.');return}
+  const qty=Number(val('nb_qty')||0);
+  const hb=Number(val('nb_hb')||0);
+
+  callServer('simpanBarang',payload({data:{
+    kode:kode,
+    nama:val('nb_nama'),
+    kategori:val('nb_kategori'),
+    supplier:val('nb_supplier'),
+    satuan:val('nb_satuan'),
+    harga_beli:val('nb_hb'),
+    harga_jual:val('nb_hj'),
+    stok:0,
+    min_stok:val('nb_min')
+  }}),res=>{
+    Object.assign(data,res);
+    if(addToCart){
+      if(qty<=0){info('Qty pembelian salah.');render();openPage('pembelian');return}
+      data.cartBeli.push({
+        kode:kode,
+        nama:val('nb_nama'),
+        qty:qty,
+        harga_beli:hb,
+        diskon_persen:0,
+        diskon_nominal:0,
+        subtotal:qty*hb
+      });
+    }
+    render();
+    openPage('pembelian');
+    info(addToCart?'Barang baru masuk keranjang.':'Barang baru tersimpan.');
+  });
+}
+
+function calcItemSubtotal(qty,harga,diskonPersen,diskonNominal){
+  const bruto = Number(qty||0) * Number(harga||0);
+  const disc = Math.min(bruto, (bruto * Number(diskonPersen||0) / 100) + Number(diskonNominal||0));
+  return Math.max(0, bruto - disc);
+}
+
+function addBeli(){
+  const b=getBarang(val('pb_barang'));
+  if(!b){info('Pilih barang');return}
+
+  const qty=Number(val('pb_qty')||0);
+  if(qty<=0){info('Qty salah');return}
+
+  const harga=val('pb_harga')===''?Number(b.harga_beli||0):Number(val('pb_harga')||0);
+  const diskonPersen=Number(val('pb_diskon_persen')||0);
+  const diskonNominal=Number(val('pb_diskon_nominal')||0);
+  const subtotal=calcItemSubtotal(qty,harga,diskonPersen,diskonNominal);
+
+  data.cartBeli.push({
+    kode:b.kode,
+    nama:b.nama,
+    qty:qty,
+    harga_beli:harga,
+    diskon_persen:diskonPersen,
+    diskon_nominal:diskonNominal,
+    subtotal:subtotal
+  });
+  renderPembelian();
+}
+
+function addSupplierBarangToBeli(){
+  if(!data.barang.length){info('Data barang kosong.');return}
+
+  const supplier = getSupplierPembelian();
+  if(!supplier || supplier === '-' || supplier === 'Supplier Lainnya'){
+    info('Pilih supplier barang terlebih dahulu.');
+    return;
+  }
+
+  const barangSupplier = data.barang.filter(b => String(b.supplier || '').trim() === supplier);
+  if(!barangSupplier.length){
+    info('Belum ada barang untuk supplier: ' + supplier + '. Isi Supplier Barang di menu Data Barang.');
+    return;
+  }
+
+  const qty=Number(val('pb_qty_semua')||1);
+  if(qty<=0){info('Qty semua barang salah.');return}
+
+  const diskonPersen=Number(val('pb_diskon_persen')||0);
+  const diskonNominal=Number(val('pb_diskon_nominal')||0);
+
+  barangSupplier.forEach(b=>{
+    const harga=Number(b.harga_beli||0);
+    data.cartBeli.push({
+      kode:b.kode,
+      nama:b.nama,
+      qty:qty,
+      harga_beli:harga,
+      diskon_persen:diskonPersen,
+      diskon_nominal:diskonNominal,
+      subtotal:calcItemSubtotal(qty,harga,diskonPersen,diskonNominal)
+    });
+  });
+
+  renderPembelian();
+  info('Barang supplier ' + supplier + ' sudah masuk keranjang.');
+}
+
+function submitBeli(){
+  if(!data.cartBeli.length){info('Keranjang kosong');return}
+
+  const t = hitungTotalPembelian();
+  callServer('prosesPembelian',payload({data:{
+    supplier:getSupplierPembelian(),
+    catatan:val('pb_catatan'),
+    diskon_total:t.diskonTotal,
+    ppn_persen:t.ppnPersen,
+    items:data.cartBeli
+  }}),res=>{
+    Object.assign(data,res);
+    data.cartBeli=[];
+    render();
+    openPage('pembelian');
+    info('Pembelian stok tersimpan.');
+  });
+}
+
+function renderDataBeli(){qs('dataBeli').innerHTML=`<div class="card"><h2>Data Beli</h2>${table(['ID','Tanggal','Supplier','Subtotal','Diskon','PPN %','PPN Rp','Total','Catatan'],data.pembelian.slice().reverse().map(x=>[e(x.id_beli),e(x.tanggal),e(x.supplier),rp(x.subtotal||x.total),rp(x.diskon_total||0),e(x.ppn_persen||0),rp(x.ppn_total||0),rp(x.total),e(x.catatan)]))}</div>`}
+function renderDataJual(){qs('dataJual').innerHTML=`<div class="card"><h2>Data Jual</h2>${table(['ID','Tanggal','User','Pelanggan','RFID','Metode','Total','Bayar','Kembali'],data.penjualan.slice().reverse().map(x=>[e(x.id_jual),e(x.tanggal),e(x.user),e(x.pelanggan),e(x.anggota_rfid||'-'),e(x.metode_bayar),rp(x.total),rp(x.bayar),rp(x.kembali)]))}</div>`}
+function renderLaporan(){
+  const omzet = data.penjualan.reduce((s,x)=>s+Number(x.total||0),0);
+  const totalHj = data.detailJual.reduce((s,x)=>s+(Number(x.qty||0)*Number(x.harga_jual||0)),0);
+  const totalHpp = data.detailJual.reduce((s,x)=>s+(Number(x.qty||0)*Number(x.harga_beli||0)),0);
+  const laba = totalHj - totalHpp;
+  const beli = data.pembelian.reduce((s,x)=>s+Number(x.total||0),0);
+  const stok = data.barang.reduce((s,b)=>s+Number(b.stok||0)*Number(b.harga_beli||0),0);
+
+  const detailRows = data.detailJual.slice().reverse().map(x=>{
+    const qty = Number(x.qty||0);
+    const hb = Number(x.harga_beli||0);
+    const hj = Number(x.harga_jual||0);
+    const hpp = qty * hb;
+    const totalJual = qty * hj;
+    const untung = totalJual - hpp;
+    return [
+      e(x.id_jual),
+      e(x.kode),
+      e(x.nama),
+      e(qty),
+      rp(hj),
+      rp(hb),
+      rp(totalJual),
+      rp(hpp),
+      rp(untung)
+    ];
+  });
+
+  qs('laporan').innerHTML=`<div class="card">
+    <h2>Laporan Semua Transaksi</h2>
+    <p class="muted">ADMIN dan USER sama-sama melihat semua transaksi. HJ = Harga Jual. HPP = Harga Pokok Penjualan / modal.</p>
+    <button class="gray" onclick="loadData()">Refresh Laporan</button>
+  </div>
+
+  <div class="grid grid3">
+    <div class="card"><div class="muted">Omzet Transaksi</div><div class="stat">${rp(omzet)}</div></div>
+    <div class="card"><div class="muted">Total HJ</div><div class="stat">${rp(totalHj)}</div></div>
+    <div class="card"><div class="muted">Total HPP</div><div class="stat">${rp(totalHpp)}</div></div>
+    <div class="card"><div class="muted">Laba Kotor</div><div class="stat">${rp(laba)}</div></div>
+    <div class="card"><div class="muted">Jumlah Transaksi</div><div class="stat">${data.penjualan.length}</div></div>
+    <div class="card"><div class="muted">Pembelian Stok</div><div class="stat">${rp(beli)}</div></div>
+    <div class="card"><div class="muted">Nilai Stok Modal</div><div class="stat">${rp(stok)}</div></div>
+    <div class="card"><div class="muted">Jumlah Barang</div><div class="stat">${data.barang.length}</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Riwayat Transaksi</h2>
+    ${table(['ID','Tanggal','User','Pelanggan','Metode','Total','Bayar','Kembali'],data.penjualan.slice().reverse().map(x=>[
+      e(x.id_jual),e(x.tanggal),e(x.user),e(x.pelanggan),e(x.metode_bayar),rp(x.total),rp(x.bayar),rp(x.kembali)
+    ]))}
+  </div>
+
+  <div class="card">
+    <h2>Detail HJ dan HPP Per Barang</h2>
+    ${table(['ID Jual','Kode','Nama','Qty','HJ','HPP/Modal','Total HJ','Total HPP','Laba'],detailRows)}
+  </div>`;
+}
+function renderUsers(){qs('users').innerHTML=`<div class="card"><h2>User Login + RFID</h2><div class="grid grid4"><div><label>Username</label><input id="u_username"></div><div><label>Password</label><input id="u_password"></div><div><label>Nama</label><input id="u_nama"></div><div><label>Role</label><select id="u_role"><option>USER</option><option>ADMIN</option></select></div><div><label>RFID Login</label><input id="u_rfid" placeholder="Tempel RFID di sini"></div></div><br><button onclick="saveUser()">Tambah / Update User</button></div><div class="card">${table(['Username','Nama','Role','Aktif','RFID Login','Aksi'],data.users.map(u=>[e(u.username),e(u.nama),e(u.role),e(u.aktif),e(u.rfid_uid||'-'),`<button onclick="editUser('${js(u.username)}')">Edit</button><button class="red" onclick="deleteUser('${js(u.username)}')">Hapus</button>`]))}</div>`}
+function editUser(username){const u=data.users.find(x=>String(x.username)===String(username));if(!u)return;qs('u_username').value=u.username;qs('u_password').value='';qs('u_nama').value=u.nama;qs('u_role').value=u.role;qs('u_rfid').value=u.rfid_uid||'';info('Isi password sebelum simpan update.')}function saveUser(){callServer('saveUser',payload({data:{username:val('u_username'),password:val('u_password'),nama:val('u_nama'),role:val('u_role'),aktif:'YA',rfid_uid:val('u_rfid')}}),res=>{Object.assign(data,res);render()})}function deleteUser(username){if(confirm('Hapus user?'))callServer('deleteUser',payload({username:username}),res=>{Object.assign(data,res);render()})}
+function renderSettings(){const s=data.settings;qs('settings').innerHTML=`<div class="card"><h2>Pengaturan Header & Struk</h2><div class="grid grid2"><div><label>Nama Toko / Header</label><input id="set_nama_toko" value="${e(s.nama_toko)}"></div><div><label>Subjudul Struk</label><input id="set_subjudul" value="${e(s.subjudul)}"></div><div><label>Alamat</label><input id="set_alamat" value="${e(s.alamat)}"></div><div><label>Telepon</label><input id="set_telepon" value="${e(s.telepon)}"></div><div><label>URL Logo / Gambar</label><input id="set_logo_url" value="${e(s.logo_url)}"></div><div><label>Tampilkan Logo</label><select id="set_show_logo"><option ${s.show_logo==='YA'?'selected':''}>YA</option><option ${s.show_logo==='TIDAK'?'selected':''}>TIDAK</option></select></div></div><br><label>Footer Struk</label><textarea id="set_footer_struk">${e(s.footer_struk)}</textarea><br><br><button onclick="saveSettings()">Simpan Pengaturan</button></div>`}
+function saveSettings(){callServer('saveSettings',payload({data:{nama_toko:val('set_nama_toko'),subjudul:val('set_subjudul'),alamat:val('set_alamat'),telepon:val('set_telepon'),logo_url:val('set_logo_url'),show_logo:val('set_show_logo'),footer_struk:val('set_footer_struk')}}),res=>{Object.assign(data,res);render();info('Pengaturan tersimpan')})}
+function renderDebug(){qs('debug').innerHTML=`<div class="card"><h2>Debug</h2><div class="debug">${e(JSON.stringify(data.debug,null,2))}</div></div>`}
+function showReceipt(r){transaksiSubmitBusy=false;const html=buildReceiptHtml(r);lastReceiptHtml=html;qs('receiptContent').innerHTML=html;qs('receiptModal').classList.remove('hidden')}function closeReceipt(){qs('receiptModal').classList.add('hidden')}
+function buildReceiptHtml(r){const s=r.settings||data.settings,itemRows=r.items.map(it=>`<tr><td>${e(it.nama)}<br>${e(it.qty)} x ${rp(it.harga_jual)}</td><td style="text-align:right">${rp(it.subtotal)}</td></tr>`).join('');return`<div class="receipt"><div class="center">${(s.show_logo==='YA'&&s.logo_url)?`<img src="${e(s.logo_url)}"><br>`:''}<b>${e(s.nama_toko||'')}</b><br>${e(s.subjudul||'')}<br>${e(s.alamat||'')}<br>Telp: ${e(s.telepon||'')}</div><hr>No: ${e(r.id)}<br>Tgl: ${e(r.tanggal)}<br>Kasir: ${e(r.user)}<br>Pelanggan: ${e(r.pelanggan)}<br>RFID: ${e(r.anggota_rfid||'-')}<br>Metode: ${e(r.metode_bayar)}<br><hr><table style="width:100%;border-collapse:collapse">${itemRows}</table><hr><table style="width:100%"><tr><td>Total</td><td style="text-align:right"><b>${rp(r.total)}</b></td></tr><tr><td>Bayar</td><td style="text-align:right">${rp(r.bayar)}</td></tr><tr><td>Kembali</td><td style="text-align:right">${rp(r.kembali)}</td></tr></table><hr><div class="center">${barcodeSvg(r.id,42)}<br>${e(s.footer_struk||'')}</div></div>`}
+function printReceipt(){if(!lastReceiptHtml){info('Struk belum ada.');return}openPrintWindow(lastReceiptHtml,'Struk')}function openPrintWindow(html,title){const w=window.open('','_blank','width=420,height=650');if(!w){info('Popup diblokir. Izinkan popup browser.');return}w.document.open();w.document.write(`<!DOCTYPE html><html><head><title>${e(title)}</title>  <style>
+    :root{
+      --bg:#eef2f7;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --dark:#111827;
+      --gray:#64748b;
+      --shadow:0 4px 14px rgba(0,0,0,.04);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      font-size:16px;
+    }
+
+    header{
+      background:var(--primary-dark);
+      color:white;
+      padding:16px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z-index:20;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+
+    header h1{
+      margin:0;
+      font-size:22px;
+      line-height:1.2;
+    }
+
+    header small{
+      opacity:.9;
+      display:block;
+      margin-top:3px;
+    }
+
+    .login-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:linear-gradient(135deg,#1d4ed8,#0f172a);
+    }
+
+    .login-card{
+      width:100%;
+      max-width:440px;
+      background:white;
+      border-radius:18px;
+      padding:24px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns:235px minmax(0,1fr);
+      min-height:calc(100vh - 68px);
+    }
+
+    aside{
+      background:white;
+      border-right:1px solid var(--line);
+      padding:14px;
+      position:sticky;
+      top:68px;
+      height:calc(100vh - 68px);
+      overflow:auto;
+      z-index:10;
+    }
+
+    main{
+      padding:18px;
+      overflow:auto;
+      min-width:0;
+    }
+
+    .nav{
+      width:100%;
+      border:0;
+      background:white;
+      text-align:left;
+      padding:11px 13px;
+      border-radius:10px;
+      margin-bottom:5px;
+      font-weight:bold;
+      cursor:pointer;
+      color:var(--text);
+      white-space:normal;
+    }
+
+    .nav:hover,.nav.active{
+      background:#dbeafe;
+      color:var(--primary-dark);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+      min-width:0;
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+      min-width:0;
+    }
+
+    .grid2{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .grid3{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+
+    .grid4{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:5px;
+      display:block;
+    }
+
+    input,select,textarea{
+      width:100%;
+      max-width:100%;
+      padding:10px;
+      border:1px solid #d1d5db;
+      border-radius:9px;
+      background:white;
+      font-size:16px;
+      min-height:40px;
+    }
+
+    textarea{
+      min-height:70px;
+      resize:vertical;
+    }
+
+    button{
+      border:0;
+      background:var(--primary);
+      color:white;
+      padding:10px 14px;
+      border-radius:9px;
+      font-weight:bold;
+      cursor:pointer;
+      margin:2px;
+      font-size:14px;
+      min-height:40px;
+      touch-action:manipulation;
+    }
+
+    button.red{background:var(--danger)}
+    button.green{background:var(--success)}
+    button.gray{background:var(--gray)}
+    button.dark{background:var(--dark)}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+      min-width:650px;
+    }
+
+    th,td{
+      border-bottom:1px solid var(--line);
+      padding:9px;
+      text-align:left;
+      font-size:14px;
+      vertical-align:top;
+    }
+
+    th{
+      background:#f8fafc;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .card > table,
+    section > table{
+      display:block;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      border-radius:10px;
+    }
+
+    .hidden{display:none!important}
+
+    .stat{
+      font-size:24px;
+      font-weight:bold;
+      margin-top:6px;
+      word-break:break-word;
+    }
+
+    .muted{color:var(--muted)}
+
+    .toast{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      background:var(--dark);
+      color:white;
+      padding:12px 16px;
+      border-radius:10px;
+      z-index:99;
+      max-width:420px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .top-user{
+      text-align:right;
+      font-size:13px;
+      flex:0 0 auto;
+    }
+
+    .barcode-box svg{
+      max-width:180px;
+      height:52px;
+    }
+
+    .debug{
+      white-space:pre-wrap;
+      font-size:12px;
+      background:#0f172a;
+      color:#e5e7eb;
+      padding:12px;
+      border-radius:10px;
+      overflow:auto;
+      max-width:100%;
+    }
+
+    .receipt-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.65);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:24px;
+      z-index:100;
+      overflow:auto;
+    }
+
+    .receipt-panel{
+      background:white;
+      border-radius:14px;
+      padding:16px;
+      max-width:390px;
+      width:100%;
+      max-height:92vh;
+      overflow:auto;
+    }
+
+    .receipt{
+      font-family:monospace;
+      font-size:12px;
+      color:#000;
+      background:white;
+      padding:8px;
+    }
+
+    .receipt .center{text-align:center}
+
+    @media (max-width:1100px){
+      .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
+    @media (max-width:850px){
+      header{
+        align-items:flex-start;
+        padding:14px;
+      }
+
+      header h1{
+        font-size:20px;
+      }
+
+      .top-user{
+        font-size:12px;
+      }
+
+      .app{
+        display:block;
+        min-height:auto;
+      }
+
+      aside{
+        position:sticky;
+        top:63px;
+        height:auto;
+        max-height:none;
+        overflow-x:auto;
+        overflow-y:hidden;
+        white-space:nowrap;
+        border-right:0;
+        border-bottom:1px solid var(--line);
+        padding:8px;
+        display:flex;
+        gap:6px;
+        background:white;
+      }
+
+      .nav{
+        width:auto;
+        min-width:max-content;
+        margin:0;
+        padding:10px 12px;
+        text-align:center;
+        white-space:nowrap;
+        flex:0 0 auto;
+      }
+
+      main{
+        padding:12px;
+      }
+
+      .grid2,.grid3,.grid4{
+        grid-template-columns:1fr;
+      }
+
+      .card{
+        padding:14px;
+        border-radius:12px;
+      }
+
+      button{
+        padding:10px 12px;
+      }
+
+      table{
+        min-width:720px;
+      }
+
+      .toast{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        max-width:none;
+      }
+    }
+
+    @media (max-width:520px){
+      body{
+        font-size:15px;
+      }
+
+      header{
+        display:block;
+      }
+
+      header h1{
+        font-size:18px;
+      }
+
+      .top-user{
+        text-align:left;
+        margin-top:8px;
+      }
+
+      .top-user button{
+        width:100%;
+        margin-top:8px;
+      }
+
+      aside{
+        top:91px;
+      }
+
+      main{
+        padding:10px;
+      }
+
+      .login-card{
+        padding:18px;
+        border-radius:14px;
+      }
+
+      .card{
+        padding:12px;
+        margin-bottom:12px;
+      }
+
+      .stat{
+        font-size:21px;
+      }
+
+      button{
+        width:100%;
+        margin:4px 0;
+      }
+
+      .grid button{
+        width:100%;
+      }
+
+      input,select,textarea{
+        font-size:16px;
+      }
+
+      .receipt-modal{
+        padding:10px;
+      }
+
+      .receipt-panel{
+        max-width:100%;
+        border-radius:12px;
+      }
+
+      .barcode-box svg{
+        max-width:150px;
+      }
+    }
+  </style></head><body>${html}<script>setTimeout(function(){window.print();},300);<\/script></body></html>`);w.document.close()}
+</script>
+</body>
+</html>

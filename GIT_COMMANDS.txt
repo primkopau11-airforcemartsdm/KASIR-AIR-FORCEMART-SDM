@@ -1,0 +1,14 @@
+# Perintah deploy manual dari komputer
+
+git init
+git add .
+git commit -m "Initial kasir online"
+git branch -M main
+git remote add origin https://github.com/USERNAME/NAMA_REPO.git
+git push -u origin main
+
+# Setelah push:
+# 1. Buka GitHub repo
+# 2. Settings > Pages
+# 3. Source: GitHub Actions
+# 4. Tunggu workflow selesai
